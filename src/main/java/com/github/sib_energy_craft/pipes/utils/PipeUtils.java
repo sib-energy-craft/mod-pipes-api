@@ -114,10 +114,10 @@ public final class PipeUtils {
                                       @NotNull ItemStack stack,
                                       int slot,
                                       @NotNull Direction side) {
-        var itemStack = to.getStack(slot);
+        var inventoryStack = to.getStack(slot);
         if (canInsert(to, stack, slot, side)) {
             boolean transferred = false;
-            if (itemStack.isEmpty()) {
+            if (inventoryStack.isEmpty()) {
                 if(to instanceof ItemConsumer itemConsumer) {
                     itemConsumer.consume(stack, side);
                 } else {
@@ -125,11 +125,11 @@ public final class PipeUtils {
                 }
                 stack = ItemStack.EMPTY;
                 transferred = true;
-            } else if (canMergeItems(itemStack, stack)) {
-                int i = stack.getMaxCount() - itemStack.getCount();
+            } else if (canMergeItems(inventoryStack, stack)) {
+                int i = stack.getMaxCount() - inventoryStack.getCount();
                 int j = Math.min(stack.getCount(), i);
                 stack.decrement(j);
-                itemStack.increment(j);
+                inventoryStack.increment(j);
             }
             if (transferred) {
                 to.markDirty();
@@ -260,7 +260,7 @@ public final class PipeUtils {
         Integer slotToInsert = null;
         for(int i = 0; i < inventory.size(); i++) {
             var inventoryStack = inventory.getStack(i);
-            if(canMergeItems(itemStack, inventoryStack)) {
+            if(canMergeItems(inventoryStack, itemStack)) {
                 stackToInsert = inventoryStack;
                 break;
             }
