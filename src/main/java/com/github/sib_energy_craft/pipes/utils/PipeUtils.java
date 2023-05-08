@@ -221,7 +221,7 @@ public final class PipeUtils {
         if (first.getDamage() != second.getDamage()) {
             return false;
         }
-        if (first.getCount() > first.getMaxCount()) {
+        if (first.getCount() >= first.getMaxCount()) {
             return false;
         }
         return ItemStack.areNbtEqual(first, second);
