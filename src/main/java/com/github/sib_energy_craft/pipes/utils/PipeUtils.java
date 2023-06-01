@@ -214,17 +214,8 @@ public final class PipeUtils {
      * @return true - item stacks can be merged, false - otherwise
      */
     public static boolean canMergeItems(@NotNull ItemStack first,
-                                         @NotNull ItemStack second) {
-        if (!first.isOf(second.getItem())) {
-            return false;
-        }
-        if (first.getDamage() != second.getDamage()) {
-            return false;
-        }
-        if (first.getCount() >= first.getMaxCount()) {
-            return false;
-        }
-        return ItemStack.areNbtEqual(first, second);
+                                        @NotNull ItemStack second) {
+        return ItemStack.canCombine(first, second) && first.getCount() < first.getMaxCount();
     }
 
     /**
@@ -240,7 +231,7 @@ public final class PipeUtils {
                 continue;
             }
             var inventoryStack = inventory.getStack(i);
-            if (inventoryStack.isEmpty() || inventoryStack.isItemEqual(itemStack) &&
+            if (inventoryStack.isEmpty() || ItemStack.areItemsEqual(inventoryStack, itemStack) &&
                     inventoryStack.getCount() < inventoryStack.getMaxCount()) {
                 return true;
             }
@@ -325,7 +316,7 @@ public final class PipeUtils {
         }
         for(int i = 0; i < inventory.size(); i++) {
             var inventoryStack = inventory.getStack(i);
-            if (!inventoryStack.isItemEqual(requested)) {
+            if (!ItemStack.areItemsEqual(inventoryStack, requested)) {
                 continue;
             }
             int toRemove = Math.min(inventoryStack.getCount(), requestedCount);
