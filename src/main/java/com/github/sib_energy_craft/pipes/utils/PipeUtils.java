@@ -61,7 +61,7 @@ public final class PipeUtils {
      * @param itemSupplier item supplier
      * @param supplyingDirection item supplying direction
      * @return true - item was consumed, false - otherwise
-     * @since 0.0.4
+     * @since 0.0.6
      */
     public static boolean supply(@NotNull World world,
                                  @NotNull BlockPos pos,
@@ -98,7 +98,7 @@ public final class PipeUtils {
      * @param stack transferring stack
      * @param side consuming side
      *
-     * @return not transfered stack
+     * @return not transferred stack
      */
     @NotNull
     public static ItemStack transfer(@NotNull Inventory to,

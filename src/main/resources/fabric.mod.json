@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "sec-mod-pipes-api",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "name": "SibEnergyCraft - Pipes API",
   "authors": [
     "sibmaks"
