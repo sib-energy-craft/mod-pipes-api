@@ -23,46 +23,82 @@ import java.util.Map;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PipeUtils {
+    private static final Direction[] DIRECTIONS = Direction.values();
 
     /**
-     * Insert item from supplier to any of consumer
+     * Supply item from supplier to any of consumer to all directions except passed one
      *
      * @param world game world
      * @param pos block position
      * @param itemSupplier item supplier
-     * @param consumedDirection last consumed direction
+     * @param consumedDirection last consumed direction. Item not supplying in this direction
      * @return true - item was consumed, false - otherwise
      */
-    public static boolean insert(@NotNull World world,
-                                 @NotNull BlockPos pos,
-                                 @NotNull ItemSupplier itemSupplier,
-                                 @NotNull Direction consumedDirection) {
-        var itemConsumers = getItemConsumers(world, pos, consumedDirection);
-        for (var entry : itemConsumers.entrySet()) {
-            var direction = entry.getKey();
-            var itemConsumer = entry.getValue();
-            var stacksToConsume = itemSupplier.canSupply(direction);
-            for (var stackToConsume : stacksToConsume) {
-                if (!itemConsumer.canConsume(stackToConsume, direction)) {
-                    continue;
-                }
-                var stackToTransfer = new ItemStack(stackToConsume.getItem(), 1);
-                if (!itemSupplier.supply(stackToTransfer, direction)) {
-                    continue;
-                }
-                var notTransferred = itemConsumer.consume(stackToTransfer, direction);
-                if (notTransferred.isEmpty()) {
-                    return true;
-                }
-                itemSupplier.returnStack(stackToConsume, direction);
+    public static boolean supplyToAllExcept(@NotNull World world,
+                                            @NotNull BlockPos pos,
+                                            @NotNull ItemSupplier itemSupplier,
+                                            @NotNull Direction consumedDirection) {
+        for (var supplyingDirection : DIRECTIONS) {
+            if(supplyingDirection == consumedDirection) {
+                continue;
+            }
+            var itemConsumer = getItemConsumer(world, pos.offset(supplyingDirection));
+            if(itemConsumer == null) {
+                continue;
+            }
+            if(supply(world, pos, itemSupplier, supplyingDirection)) {
+                return true;
             }
         }
         return false;
     }
 
-    /*
-     * Enabled aggressive block sorting
-     * Lifted jumps to return sites
+    /**
+     * Supply item from supplier to consumer in specific direction
+     *
+     * @param world game world
+     * @param pos block position
+     * @param itemSupplier item supplier
+     * @param supplyingDirection item supplying direction
+     * @return true - item was consumed, false - otherwise
+     * @since 0.0.4
+     */
+    public static boolean supply(@NotNull World world,
+                                 @NotNull BlockPos pos,
+                                 @NotNull ItemSupplier itemSupplier,
+                                 @NotNull Direction supplyingDirection) {
+        var itemConsumer = getItemConsumer(world, pos.offset(supplyingDirection));
+        if(itemConsumer == null) {
+            return false;
+        }
+        var stacksToConsume = itemSupplier.canSupply(supplyingDirection);
+        for (var stackToConsume : stacksToConsume) {
+            if (!itemConsumer.canConsume(stackToConsume, supplyingDirection)) {
+                continue;
+            }
+            var stackToTransfer = new ItemStack(stackToConsume.getItem(), 1);
+            if (!itemSupplier.supply(stackToTransfer, supplyingDirection)) {
+                continue;
+            }
+            var notTransferred = itemConsumer.consume(stackToTransfer, supplyingDirection);
+            if (notTransferred.isEmpty()) {
+                return true;
+            }
+            itemSupplier.returnStack(stackToConsume, supplyingDirection);
+        }
+        return false;
+    }
+
+    /**
+     * Enabled aggressive block sorting<br/>
+     * Lifted jumps to return sites<br/>
+     * Transfer item to inventory from specific side
+     *
+     * @param to distance inventory
+     * @param stack transferring stack
+     * @param side consuming side
+     *
+     * @return not transfered stack
      */
     @NotNull
     public static ItemStack transfer(@NotNull Inventory to,
@@ -136,23 +172,6 @@ public final class PipeUtils {
             }
         }
         return stack;
-    }
-
-    @NotNull
-    private static Map<Direction, ItemConsumer> getItemConsumers(@NotNull World world,
-                                                                 @NotNull BlockPos pos,
-                                                                 @NotNull Direction consumedDirection) {
-        var inventories = new HashMap<Direction, ItemConsumer>();
-        for (var outputDirection : Direction.values()) {
-            if(outputDirection == consumedDirection) {
-                continue;
-            }
-            var itemConsumer = getItemConsumer(world, pos.offset(outputDirection));
-            if(itemConsumer != null) {
-                inventories.put(outputDirection, itemConsumer);
-            }
-        }
-        return inventories;
     }
 
     @Nullable
