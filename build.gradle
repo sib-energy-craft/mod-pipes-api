@@ -83,7 +83,46 @@ jar {
 
 // configure the maven publication
 publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from(components.java)
+            pom {
+                packaging = "jar"
+                url = "https://github.com/sib-energy-craft/mod-pipes-api"
+
+                licenses {
+                    license {
+                        name = "The MIT License (MIT)"
+                        url = "https://www.mit.edu/~amini/LICENSE.md"
+                    }
+                }
+
+                scm {
+                    connection = "scm:https://github.com/sib-energy-craft/mod-pipes-api.git"
+                    developerConnection = "scm:git@github.com:sib-energy-craft/mod-pipes-api.git"
+                    url = "https://github.com/sib-energy-craft/mod-pipes-api"
+                }
+
+                developers {
+                    developer {
+                        id = "sibmaks"
+                        name = "Maksim Drobyshev"
+                        email = "sibmaks@vk.com"
+                    }
+                }
+            }
+        }
+    }
     repositories {
+        maven {
+            def releasesUrl = uri("https://sibmaks.ru/repository/maven-releases/")
+            def snapshotsUrl = uri("https://sibmaks.ru/repository/maven-snapshots/")
+            url = version.toString().endsWith("SNAPSHOT") ? snapshotsUrl : releasesUrl
+            credentials {
+                username = project.findProperty("nexus_username") ?: System.getenv("NEXUS_USERNAME")
+                password = project.findProperty("nexus_password") ?: System.getenv("NEXUS_PASSWORD")
+            }
+        }
         maven {
             name = "GitHubPackages"
             url = "https://maven.pkg.github.com/sib-energy-craft/mod-pipes-api"
@@ -93,9 +132,5 @@ publishing {
             }
         }
     }
-    publications {
-        gpr(MavenPublication) {
-            from(components.java)
-        }
-    }
 }
+
